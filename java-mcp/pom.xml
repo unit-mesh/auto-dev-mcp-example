@@ -36,6 +36,7 @@
 			<artifactId>spring-ai-mcp-server-spring-boot-starter</artifactId>
 		</dependency>
 
+                <!--  The Spring AI 1.0.0-M6 will use MCP 0.7.0 version will broken AutoDev with Kotlin SDK, so we need to override in here -->
 		<dependency>
 			<groupId>io.modelcontextprotocol.sdk</groupId>
 			<artifactId>mcp</artifactId>
