@@ -1,5 +1,6 @@
 package cc.unitmesh.mcp;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;
