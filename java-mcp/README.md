@@ -1,11 +1,5 @@
 # Java MCP Example
 
-Resources:
-
-- [Spring AI - Model Context Protocol (MCP)](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html)
-- [GitHub Java SDK](https://github.com/modelcontextprotocol/java-sdk)
-- [Java MCP Server](https://modelcontextprotocol.io/sdk/java/mcp-server)
-
 ## 1. Setup Dependencies
 
 ```xml
