@@ -1,14 +1,5 @@
 # AutoDev MCP Examples
 
-## Java
-
-
-- [Spring AI - Model Context Protocol (MCP)](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html)
-- [GitHub Java SDK](https://github.com/modelcontextprotocol/java-sdk)
-- [Java MCP Server](https://modelcontextprotocol.io/sdk/java/mcp-server)
-
-
-## Python Example
 
 ```
 {
@@ -21,6 +12,12 @@
         "/Volumes/source/ai/autocrud"
       ],
       "disabled": true
+    },
+    "greeting": {
+      "command": "node",
+      "args": [
+        "/Users/phodal/source/ai/autodev-mcp-test/javascript-greeting"
+      ]
     },
     "echo": {
       "command": "uv",
@@ -45,6 +42,24 @@
   }
 }
 ```
+
+
+## Resource
+
+### Java
+
+
+- [Spring AI - Model Context Protocol (MCP)](https://docs.spring.io/spring-ai/reference/api/mcp/mcp-overview.html)
+- [GitHub Java SDK](https://github.com/modelcontextprotocol/java-sdk)
+- [Java MCP Server](https://modelcontextprotocol.io/sdk/java/mcp-server)
+
+
+### Python
+
+### JavaScript
+
+### Kotlin
+
 
 ## Test
 
