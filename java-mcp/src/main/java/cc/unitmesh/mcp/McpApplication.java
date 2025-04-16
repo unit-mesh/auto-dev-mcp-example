@@ -1,6 +1,5 @@
 package cc.unitmesh.mcp;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;
@@ -15,7 +14,7 @@ public class McpApplication {
 	}
 
 	@Bean
-	public ToolCallbackProvider weatherTools(WeatherService weatherService) {
-		return MethodToolCallbackProvider.builder().toolObjects(weatherService).build();
+	public ToolCallbackProvider weatherTools(WeatherService weatherService, SqlService sqlService) {
+		return MethodToolCallbackProvider.builder().toolObjects(weatherService, sqlService).build();
 	}
 }
