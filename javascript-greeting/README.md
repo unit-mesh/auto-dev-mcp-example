@@ -1,0 +1,2 @@
+# AutoDev MP - JavaScript Greeting
+

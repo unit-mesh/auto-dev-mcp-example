@@ -1,7 +1,6 @@
 # AutoDev MCP Examples
 
-
-```
+```json
 {
   "mcpServers": {
     "filesystem": {
