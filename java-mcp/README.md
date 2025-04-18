@@ -1,5 +1,23 @@
 # Java MCP Example
 
+Boot
+
+```bash
+java -jar /Volumes/source/ai/autodev-mcp-test/java-mcp/target/mcp-0.0.1-SNAPSHOT.jar
+```
+
+初始化 GRPC JSON：
+
+```json
+{"id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{"experimental":{},"sampling":{}},"clientInfo":{"name":"weather","version":"1.0.0"},"jsonrpc":"2.0"}}
+```
+
+工具列表：
+
+```json
+{"id":2,"method":"tools/list","params":{"protocolVersion":"2024-11-05","capabilities":{"experimental":{},"sampling":{}},"clientInfo":{"name":"weather","version":"1.0.0"}},"jsonrpc":"2.0"}
+```
+
 ## 1. Setup Dependencies
 
 ```xml
