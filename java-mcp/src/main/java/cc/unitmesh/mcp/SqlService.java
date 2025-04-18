@@ -17,7 +17,7 @@ public class SqlService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Tool(description = "Execute a select SQL query and return results in a readable format. Results will be truncated after 4000 characters.")
+    @Tool(description = "Execute a select SQL query and return results in a readable format. Results will be truncated after 4000 characters. Will throw an exception if the query is not a SELECT statement.")
     public List<Map<String, Object>> queryBySql(String sql) {
         if (!sql.toLowerCase().startsWith("select")) {
             throw new RuntimeException("Only SELECT queries are allowed.");
@@ -25,7 +25,7 @@ public class SqlService {
         return jdbcTemplate.queryForList(sql);
     }
 
-    @Tool(description = "Return all table names in the database separated by comma.")
+    @Tool(description = "Return all table names in the database separated by comma. This is useful for getting a quick overview of the database structure.")
     public String listAllTablesName() {
         List<Map<String, Object>> tableNames = jdbcTemplate.queryForList(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE()");
@@ -34,7 +34,7 @@ public class SqlService {
                 .collect(Collectors.joining(","));
     }
 
-    @Tool(description = "Returns schema and relation information for the given table. Includes column name, data type and constraints.")
+    @Tool(description = "Returns schema and relation information for the given table. Includes column name, data type and constraints. This is useful for understanding the structure of a specific table.")
     public String getTableSchema(String tableName) {
         String sql = """
                 SELECT
