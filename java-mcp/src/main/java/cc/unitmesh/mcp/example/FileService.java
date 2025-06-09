@@ -1,7 +1,7 @@
 package cc.unitmesh.mcp.example;
 
 import cc.unitmesh.mcp.annotation.MCPTool;
-import org.springframework.ai.tool.annotation.Tool;
+
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -30,7 +30,6 @@ public class FileService {
         cacheable = true,
         cacheTtlSeconds = 60
     )
-    @Tool(description = "Read the contents of a text file")
     public String readFile(String filePath) {
         try {
             Path path = Paths.get(filePath);
@@ -56,7 +55,6 @@ public class FileService {
         cacheable = true,
         cacheTtlSeconds = 30
     )
-    @Tool(description = "List files and directories in the specified path")
     public List<String> listDirectory(String directoryPath) {
         try {
             Path path = Paths.get(directoryPath);
@@ -86,7 +84,6 @@ public class FileService {
         cacheable = true,
         cacheTtlSeconds = 120
     )
-    @Tool(description = "Get information about a file or directory (size, last modified, etc.)")
     public String getFileInfo(String filePath) {
         try {
             Path path = Paths.get(filePath);
@@ -119,7 +116,6 @@ public class FileService {
         timeoutMs = 10000,
         priority = 2
     )
-    @Tool(description = "Write content to a text file (creates or overwrites)")
     public String writeFile(String filePath, String content) {
         try {
             Path path = Paths.get(filePath);

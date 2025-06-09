@@ -5,14 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.model.function.FunctionCallback;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
-import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MCP-specific implementation of ToolCallbackProvider.
- * Delegates to MethodToolCallbackProvider for actual tool management.
+ * Creates MCPMethodToolCallback instances directly from MCPToolMetadata.
  *
  * @author AutoDev MCP Team
  */
@@ -22,47 +22,42 @@ public class MCPToolCallbackProvider implements ToolCallbackProvider {
     private static final Logger logger = LoggerFactory.getLogger(MCPToolCallbackProvider.class);
 
     private final MCPToolRegistry toolRegistry;
-    private volatile MethodToolCallbackProvider delegateProvider;
+    private final Map<String, MCPMethodToolCallback> toolCallbacks = new ConcurrentHashMap<>();
 
     public MCPToolCallbackProvider(MCPToolRegistry toolRegistry) {
         this.toolRegistry = toolRegistry;
-        // Delay initialization until tools are registered
-        this.delegateProvider = null;
+        logger.info("MCPToolCallbackProvider initialized");
     }
     
     /**
-     * Create delegate provider from registered MCP tools.
+     * Create tool callbacks from registered MCP tools.
      */
-    private MethodToolCallbackProvider createDelegateProvider() {
-        // Collect all tool objects from registry
-        var toolObjects = toolRegistry.getAllTools().stream()
-            .map(MCPToolMetadata::getBean)
-            .distinct()
-            .toArray();
+    private void createToolCallbacks() {
+        toolCallbacks.clear();
 
-        if (toolObjects.length == 0) {
-            logger.warn("No MCP tools found in registry");
-            return MethodToolCallbackProvider.builder().build();
+        Collection<MCPToolMetadata> tools = toolRegistry.getAllTools();
+        for (MCPToolMetadata metadata : tools) {
+            if (metadata.isEnabled()) {
+                MCPMethodToolCallback callback = new MCPMethodToolCallback(metadata);
+                toolCallbacks.put(metadata.getName(), callback);
+                logger.debug("Created tool callback for: {}", metadata.getName());
+            }
         }
 
-        logger.info("Creating delegate provider with {} tool objects", toolObjects.length);
-        return MethodToolCallbackProvider.builder()
-            .toolObjects(toolObjects)
-            .build();
+        logger.info("Created {} MCP tool callbacks", toolCallbacks.size());
     }
-    
+
     /**
-     * Ensure delegate provider is initialized.
+     * Ensure tool callbacks are initialized.
      */
-    private MethodToolCallbackProvider getDelegateProvider() {
-        if (delegateProvider == null) {
+    private void ensureCallbacksInitialized() {
+        if (toolCallbacks.isEmpty() && toolRegistry.getToolCount() > 0) {
             synchronized (this) {
-                if (delegateProvider == null) {
-                    delegateProvider = createDelegateProvider();
+                if (toolCallbacks.isEmpty() && toolRegistry.getToolCount() > 0) {
+                    createToolCallbacks();
                 }
             }
         }
-        return delegateProvider;
     }
 
     /**
@@ -70,50 +65,54 @@ public class MCPToolCallbackProvider implements ToolCallbackProvider {
      * This is a convenience method not part of the interface.
      */
     public Optional<ToolCallback> getToolCallback(String toolName) {
-        // First try to find by MCP tool name
-        var mcpTool = toolRegistry.getTool(toolName);
-        if (mcpTool.isPresent()) {
-            String methodName = mcpTool.get().getMethod().getName();
-            // Search by method name
-            for (FunctionCallback callback : getDelegateProvider().getToolCallbacks()) {
-                if (callback instanceof ToolCallback toolCallback &&
-                    toolCallback.getName().equals(methodName)) {
-                    return Optional.of(toolCallback);
-                }
-            }
-        }
-
-        // Fallback: search by exact name match
-        for (FunctionCallback callback : getDelegateProvider().getToolCallbacks()) {
-            if (callback instanceof ToolCallback toolCallback &&
-                toolCallback.getName().equals(toolName)) {
-                return Optional.of(toolCallback);
-            }
-        }
-        return Optional.empty();
+        ensureCallbacksInitialized();
+        MCPMethodToolCallback callback = toolCallbacks.get(toolName);
+        return Optional.ofNullable(callback);
     }
 
     @Override
     public FunctionCallback[] getToolCallbacks() {
-        return getDelegateProvider().getToolCallbacks();
+        ensureCallbacksInitialized();
+        return toolCallbacks.values().toArray(new FunctionCallback[0]);
     }
     
     /**
      * Refresh tool callbacks when registry changes.
-     * This recreates the delegate provider with updated tools.
      */
     public void refreshToolCallbacks() {
         synchronized (this) {
-            delegateProvider = null; // Force recreation on next access
+            createToolCallbacks();
         }
         logger.info("MCP tool callbacks refreshed");
+    }
+
+    /**
+     * Add a new tool callback.
+     */
+    public void addToolCallback(MCPToolMetadata metadata) {
+        if (metadata.isEnabled()) {
+            MCPMethodToolCallback callback = new MCPMethodToolCallback(metadata);
+            toolCallbacks.put(metadata.getName(), callback);
+            logger.info("Added tool callback for: {}", metadata.getName());
+        }
+    }
+
+    /**
+     * Remove a tool callback.
+     */
+    public void removeToolCallback(String toolName) {
+        MCPMethodToolCallback removed = toolCallbacks.remove(toolName);
+        if (removed != null) {
+            logger.info("Removed tool callback for: {}", toolName);
+        }
     }
 
     /**
      * Get tool callback count.
      */
     public int getCallbackCount() {
-        return getDelegateProvider().getToolCallbacks().length;
+        ensureCallbacksInitialized();
+        return toolCallbacks.size();
     }
 
     /**
@@ -126,12 +125,11 @@ public class MCPToolCallbackProvider implements ToolCallbackProvider {
     /**
      * Get all tool callbacks as a map (for compatibility).
      */
-    public java.util.Map<String, ToolCallback> getToolCallbacksAsMap() {
-        java.util.Map<String, ToolCallback> result = new java.util.HashMap<>();
-        for (FunctionCallback callback : getDelegateProvider().getToolCallbacks()) {
-            if (callback instanceof ToolCallback toolCallback) {
-                result.put(toolCallback.getName(), toolCallback);
-            }
+    public Map<String, ToolCallback> getToolCallbacksAsMap() {
+        ensureCallbacksInitialized();
+        Map<String, ToolCallback> result = new HashMap<>();
+        for (Map.Entry<String, MCPMethodToolCallback> entry : toolCallbacks.entrySet()) {
+            result.put(entry.getKey(), entry.getValue());
         }
         return result;
     }

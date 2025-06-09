@@ -144,8 +144,14 @@ public class MCPAutoConfiguration implements ImportAware {
                 if (mcpTool != null) {
                     try {
                         toolRegistry.registerTool(bean, method, mcpTool);
-                        // Refresh callbacks to include the new tool
-                        callbackProvider.refreshToolCallbacks();
+                        // Add the tool callback immediately
+                        var metadata = toolRegistry.getTool(
+                            org.springframework.util.StringUtils.hasText(mcpTool.name()) ?
+                            mcpTool.name() : method.getName()
+                        );
+                        if (metadata.isPresent()) {
+                            callbackProvider.addToolCallback(metadata.get());
+                        }
                     } catch (Exception e) {
                         logger.error("Failed to register MCP tool: {}.{}", 
                             beanClass.getSimpleName(), method.getName(), e);
